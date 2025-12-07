@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+python-multipart
+segno
+Pillow
+python-dotenv
+httpx
+pytest
+gunicorn
+pydantic
+pydantic_settings
