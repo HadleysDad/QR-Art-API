@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+env/
+
+# Environment files
+.env
+*.env
+
+# OS files
+.DS_Store
+
+# Log files
+*.log
+
+# Cache
+.cache/
+*.sqlite3
+
+# Upload folders (if any)
+uploads/
+temp/
