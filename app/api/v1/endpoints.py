@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile, Depends, Response, HTTPException, status, Form
+from fastapi import APIRouter, File, UploadFile, Depends, Response, HTTPException, status, Form, Request
 from app.core.rapidapi import get_rapidapi_plan
 from app.core.config import settings
 from app.services.qr_service import (
@@ -15,6 +15,7 @@ def health():
 
 @router.post("/generate", tags=["generate"])
 async def generate(
+    request: Request,
     data: str = Form(None),
     format: str = Form("svg"),
     size: int = Form(800),
@@ -24,6 +25,11 @@ async def generate(
     logo: UploadFile = File(None),
     plan: str = Depends(get_rapidapi_plan)
 ):
+    # Debug: log all headers
+    print("All incoming headers:", dict(request.headers))
+    print("X-RapidAPI-Key from header:", request.headers.get("x-rapidapi-key"))
+    print("X-RapidAPI-Host from header:", request.headers.get("x-rapidapi-host"))
+    
     # prefer form data (multipart) since logo upload is multipar; clients may also POST JSON and no logo
     if not data:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="'data' is required")
