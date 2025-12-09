@@ -24,6 +24,7 @@ async def generate(
     logo_scale: float = Form(0.2),
     logo: UploadFile = File(None),
     plan: str = Depends(get_rapidapi_plan)
+    #plan = "free" # hardcode for now
 ):
     # Debug: log all headers
     print("All incoming headers:", dict(request.headers))

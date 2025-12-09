@@ -1,34 +1,19 @@
-from fastapi import Header, HTTPException
-from .config import settings
+from fastapi import Header, HTTPException, Request
 from typing import Optional
 
-# Rapid runtime sends headers such as X-RapidAPI-Key, X-RapidAPI-Host, X-Forwarded-Host
-# You may also configure custom tokens in Studio to forward plan metadata (e.g. x-rapidapi-plan)
-# If RapidAPI doesn't send plan info, you can map X-RapidAPI-Key via your own backend call (optional).
-
 def get_rapidapi_plan(
-  x_rapidapi_key: Optional[str] = Header(None, convert_underscores=False),
-  x_rapidapi_host: Optional[str] = Header(None, convert_underscores=False),
-  x_rapidapi_plan: Optional[str] = Header(None, alias="x-rapidapi-plan", convert_underscores=False),
-  x_forward_host: Optional[str] = Header(None, convert_underscores=False)
+    request: Request,   # <-- add this so we can read raw headers
+    x_rapidapi_key: Optional[str] = Header(None, alias="X-RapidAPI-Key", convert_underscores=False),
+    x_rapidapi_host: Optional[str] = Header(None, alias="X-RapidAPI-Host", convert_underscores=False),
+    x_rapidapi_plan: Optional[str] = Header(None, alias="x-rapidapi-plan", convert_underscores=False),
 ) -> str:
+    # Fallback in case something still sends lowercase/underscores
+    key = x_rapidapi_key or request.headers.get("x-rapidapi-key") or request.headers.get("X-RapidAPI-Key")
     
-    """
-    Return 'free' or 'paid' depending on headers RapidAPI sends.
-    Best practice: configure RapidAPI Studio to forward a header like x-rapidapi-plan containing the plan name.
-    If no plan header exists, default to 'free'. This function can be extended to call RapidAPI's management APIs for verification.
-    """
-    # Basic check: Radpid runtime should forward an app key; if not present, reject
-    if not x_rapidapi_key:
+    if not key:
         raise HTTPException(status_code=401, detail="Missing RapidAPI key header")
     
-    # If RapidAPI has forwarded which plan, use it
-    if x_rapidapi_plan:
-        plan = x_rapidapi_plan.lower()
-        if "paid" in plan or "pro" in plan or "premium" in plan:
-            return "paid"
-        return "free"
+    if x_rapidapi_plan and x_rapidapi_plan.lower() in {"paid", "pro", "premium"}:
+        return "paid"
     
-    # Otherwise fefault to free - recommeneded: configure Studio to forward a plan header.
     return "free"
-    
